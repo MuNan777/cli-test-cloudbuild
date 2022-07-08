@@ -3,9 +3,6 @@ const path = require('path')
 const COS = require('cos-nodejs-sdk-v5')
 const inquirer = require('inquirer')
 
-// 本地发布使用配置，下方有云发布使用配置，如使用云发布，请注释此配置，在服务端的 deployConfig 导入配置，同时名称应为 [项目名].js
-const { SECRET_ID, SECRET_KEY, BUCKET_NAME, LOCATION, DIST_NAME } = require('./config/index')
-
 async function prompt({ choices, defaultValue, message, type = 'list', require = true }) {
   const options = {
     type,
@@ -127,9 +124,18 @@ async function cleanBucket(cos, Bucket, Region, objects) {
   return objects
 }
 
-async function deploy(config) {
-  // 云发布使用配置，使用云发布，请注释此配置，在服务端的 deployConfig 导入配置，同时名称应为 [项目名].js
-  // const { SECRET_ID, SECRET_KEY, BUCKET_NAME, LOCATION, DIST_NAME } = config
+async function deploy() {
+  // 本地发布配置路径
+  let configPath = './config/index'
+  // 云发布使用配置，使用云发布，
+  // 需要在服务端的 根目录下 deployConfig 文件夹，如没有则创建，然后导入配置，同时名称应为 [项目名].js
+  // 将项目 .gitignore 中的 munan-cli-deploy-cos 改为 munan-cli-deploy-cos/config
+  // 上传发布脚本
+  const argv = process.argv
+  if (argv.length > 2 && argv[2])
+    configPath = argv[2].split('--config-path=')[1]
+
+  const { SECRET_ID, SECRET_KEY, BUCKET_NAME, LOCATION, DIST_NAME } = require(configPath)
 
   const DIST_PATH = path.resolve(__dirname, '..', DIST_NAME)
 
